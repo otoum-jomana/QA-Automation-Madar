@@ -2,18 +2,18 @@ name: QA Automation CI
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
 
 jobs:
   test:
-    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
       with:
         node-version: 18
+        cache: 'npm' # تسريع تثبيت التبعات في المرات القادمة
 
     - name: Install dependencies
       run: npm install
@@ -21,9 +21,22 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
 
-    # الخطوة السحرية: تشغيل السيرفر المحلي في الخلفية قبل التست
-    - name: Run local server
-      run: npm run dev & 
+    # تشغيل سيرفر MADAR في الخلفية ليتصل به Playwright
+    - name: Start Local Server
+      run: |
+        npm run dev &
+        npx wait-on http://localhost:3000 # يفضل استخدامه لضمان أن السيرفر جاهز قبل بدء الاختبارات
 
     - name: Run Playwright tests
       run: npx playwright test
+
+    # خطوة رفع التقارير
+    - name: Upload Test Results
+      if: always() # يضمن الرفع حتى لو فشلت الاختبارات
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-junit-report
+        path: |
+          test-results/
+          playwright-report/ # لرفع تقارير Playwright HTML أيضاً إن وجدت
+        retention-days: 30 # مدة الاحتفاظ بالملف على GitHub
