@@ -1,41 +1,37 @@
-name: QA Automation CI
-on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
-      - name: Run Jest Tests with Coverage
-        run: npm run test:coverage
-
-      - name: Run Playwright Tests
-        run: npm run test:pw
-
-      - name: Upload Test and Coverage Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: qa-reports
-          path: |
-            coverage/
-            test-results/
-            playwright-report/
+{
+  "name": "qa-automation-madar",
+  "version": "1.0.0",
+  "description": "Automation testing for MADAR project",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "test:ci": "jest --ci --reporters=default --reporters=jest-junit",
+    "test:pw": "playwright test",
+    "test:coverage": "jest --coverage"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/jest": "^29.5.14",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^30.4.1",
+    "jest-junit": "^16.0.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.44.0",
+    "@types/node": "^20.12.7"
+  },
+  "jest-junit": {
+    "outputDirectory": "test-results",
+    "outputName": "report.xml",
+    "ancestorSeparator": " › ",
+    "uniqueOutputName": "false",
+    "classNameTemplate": "{classname}",
+    "titleTemplate": "{title}"
+  }
+}
