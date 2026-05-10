@@ -2,9 +2,9 @@ import { validateAuth } from '../src/authValidator';
 
 describe('QA Manual Cases Automation - Madar Project', () => {
 
-  // هاد هو كود الـ Mock (الخدعة) - ضيفيه هون
   beforeEach(() => {
-    jest.spyOn(global, 'fetch').mockImplementation(() =>
+    // التعديل هون: بنعرف الـ fetch كـ function وهمية مباشرة
+    global.fetch = jest.fn().mockImplementation(() =>
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve({ user: 'Jomana', token: '123' }),
@@ -13,10 +13,11 @@ describe('QA Manual Cases Automation - Madar Project', () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks(); // عشان ما يخرب على الاختبارات الثانية
+    jest.restoreAllMocks(); 
+    jest.clearAllMocks(); // زيادة تأكيد لتنظيف الذاكرة
   });
 
-  // اختباراتك اللي كتبتيها
+  // اختباراتك
   test('Login: Should handle email formatting', () => {
     const res = validateAuth.login(' JOMANA@MAIL.COM ', '123456');
     expect(res.email).toBe('jomana@mail.com');
