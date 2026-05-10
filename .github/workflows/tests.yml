@@ -1,42 +1,46 @@
 name: QA Automation CI
+
 on:
   push:
+    branches: [ main, master ]
+  pull_request:
     branches: [ main, master ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 18
-        cache: 'npm' # تسريع تثبيت التبعات في المرات القادمة
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: npm install
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
 
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+      - name: Install dependencies
+        run: npm install
 
-    # تشغيل سيرفر MADAR في الخلفية ليتصل به Playwright
-    - name: Start Local Server
-      run: |
-        npm run dev &
-        npx wait-on http://localhost:3000 # يفضل استخدامه لضمان أن السيرفر جاهز قبل بدء الاختبارات
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
 
-    - name: Run Playwright tests
-      run: npx playwright test
+      - name: Run Jest Tests with Coverage
+        # لتشغيل اختبارات الـ API والـ Unit وتقديم تقرير الـ 100%
+        run: npm run test:coverage
 
-    # خطوة رفع التقارير
-    - name: Upload Test Results
-      if: always() # يضمن الرفع حتى لو فشلت الاختبارات
-      uses: actions/upload-artifact@v4
-      with:
-        name: playwright-junit-report
-        path: |
-          test-results/
-          playwright-report/ # لرفع تقارير Playwright HTML أيضاً إن وجدت
-        retention-days: 30 # مدة الاحتفاظ بالملف على GitHub
+      - name: Run Playwright Tests
+        # لتشغيل اختبارات الـ UI
+        run: npm run test:pw
+
+      - name: Upload Test and Coverage Results
+        if: always() # لرفع التقارير حتى لو فشل اختبار معين
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-automation-reports
+          path: |
+            coverage/
+            test-results/
+            playwright-report/
+          retention-days: 30
